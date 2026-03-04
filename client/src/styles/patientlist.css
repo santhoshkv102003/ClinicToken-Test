@@ -1,0 +1,96 @@
+/* Table Container */
+.table-wrapper {
+  overflow-x: auto;
+  border-radius: 0.75rem;
+  /* Optional: explicit background if not provided by parent, 
+     but parent admin-section > list-container usually has it. 
+     Keeping it transparent to blend. */
+}
+
+.patient-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  color: #f1f5f9;
+  min-width: 600px;
+}
+
+.patient-table th {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 1rem 1.5rem;
+  text-align: left;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+  color: #cbd5e1;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  white-space: nowrap;
+}
+
+.patient-table td {
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  font-size: 0.95rem;
+  color: #e2e8f0;
+  transition: background 0.2s;
+}
+
+.patient-table tr:last-child td {
+  border-bottom: none;
+}
+
+.patient-table tbody tr:hover td {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+/* Specific Cell Styles */
+.patient-name {
+  font-weight: 600;
+  color: #fff;
+}
+
+.patient-phone {
+  font-family: monospace; /* optional for numbers */
+  letter-spacing: 0.02em;
+}
+
+/* Badge for Treatment */
+.treatment-badge {
+  display: inline-block;
+  padding: 0.35rem 0.85rem;
+  border-radius: 2rem;
+  font-size: 0.8rem;
+  font-weight: 500;
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(168, 85, 247, 0.2));
+  border: 1px solid rgba(139, 92, 246, 0.3);
+  color: #e9d5ff;
+  white-space: nowrap;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+/* Empty State */
+.empty-state {
+  text-align: center;
+  padding: 4rem 2rem;
+  color: #94a3b8;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.empty-state p {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+/* Animations */
+.table-wrapper {
+  animation: fadeIn 0.4s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}

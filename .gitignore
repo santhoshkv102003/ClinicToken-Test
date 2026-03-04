@@ -1,0 +1,14 @@
+# dependencies
+node_modules/
+client/node_modules/
+server/node_modules/
+
+# env files
+.env
+.env.*
+
+# builds
+dist/
+build/
+
+.vercel

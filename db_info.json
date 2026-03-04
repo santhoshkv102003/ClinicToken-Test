@@ -1,0 +1,30 @@
+{
+  "host": "ac-qidc7zt-shard-00-00.dw8r5df.mongodb.net",
+  "databaseName": "hospital_tokens",
+  "port": 27017,
+  "databases": [
+    {
+      "name": "hospital_tokens",
+      "sizeOnDisk": 73728,
+      "empty": false
+    },
+    {
+      "name": "sample_mflix",
+      "sizeOnDisk": 135995392,
+      "empty": false
+    },
+    {
+      "name": "admin",
+      "sizeOnDisk": 364544,
+      "empty": false
+    },
+    {
+      "name": "local",
+      "sizeOnDisk": 17009840128,
+      "empty": false
+    }
+  ],
+  "collections": [
+    "patients"
+  ]
+}

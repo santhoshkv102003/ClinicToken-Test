@@ -1,0 +1,41 @@
+.card-wrapper {
+  display: flex;
+  justify-content: center;
+  gap: 40px;
+  margin-top: 60px;
+  animation: fadeIn 1s ease-in-out;
+}
+
+.glass-card {
+  width: 260px;
+  padding: 25px;
+  background: rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(14px);
+  border-radius: 18px;
+  border: 1px solid rgba(255,255,255,0.3);
+  box-shadow: 0px 8px 20px rgba(0,0,0,0.2);
+  transition: 0.3s ease;
+  text-align: center;
+  color: #fff;
+}
+
+.glass-card:hover {
+  transform: translateY(-10px) scale(1.03);
+  box-shadow: 0px 12px 25px rgba(0,0,0,0.35);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.glass-card h3 {
+  font-size: 22px;
+  font-weight: 600;
+}
+
+.glass-card p {
+  margin-top: 12px;
+  font-size: 32px;
+  font-weight: 700;
+}
