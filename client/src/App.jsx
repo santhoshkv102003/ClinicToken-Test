@@ -15,22 +15,21 @@ const App = () => {
   return (
     <AppProvider>
       <BrowserRouter>
-        {/* <div className="app-background"> */}
-          <div>          
-            <Routes>
+        <>
+          <Routes>
 
-          <Route path="/" element={<Home />} />
+            <Route path="/" element={<Home />} />
 
-          <Route path="/login" element={<Login />} />
+            <Route path="/login" element={<Login />} />
 
-          <Route path="/admin" element={
-            <ProtectedRoute>
-              <Admin />
-            </ProtectedRoute>
-          } />
+            <Route path="/admin" element={
+              <ProtectedRoute>
+                <Admin />
+              </ProtectedRoute>
+            } />
 
           </Routes>
-        </div>
+        </>
       </BrowserRouter>
     </AppProvider>
   );

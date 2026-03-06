@@ -1,24 +1,40 @@
-import "../styles/cards.css";
-
 const Cards = ({ completed, queue, wait }) => {
   return (
-    <div className="card-wrapper">
-      <div className="glass-card">
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-users w-6 h-6 text-primary"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-        <h3>Completed</h3>
-        <p>{completed}</p>
+    <div className="cq-cards">
+      {/* Completed */}
+      <div className="cq-card cq-card-completed">
+        <div className="cq-card-top">
+          <div className="cq-icon-wrap">✓</div>
+          <span className="cq-card-tag">TODAY</span>
+        </div>
+        <div className="cq-card-label">Completed</div>
+        <div className="cq-card-value">{completed}</div>
+        <div className="cq-card-foot">▲ &nbsp;PATIENTS SERVED</div>
       </div>
 
-      <div className="glass-card">
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-users w-6 h-6 text-primary"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-        <h3>In Queue</h3>
-        <p>{queue}</p>
+      {/* In Queue */}
+      <div className="cq-card cq-card-queue">
+        <div className="cq-card-top">
+          <div className="cq-icon-wrap">⋯</div>
+          <span className="cq-card-tag">LIVE</span>
+        </div>
+        <div className="cq-card-label">In Queue</div>
+        <div className="cq-card-value">{queue}</div>
+        <div className="cq-card-foot">● &nbsp;ACTIVE TOKENS</div>
       </div>
 
-      <div className="glass-card">
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-clock w-6 h-6 text-warning"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-        <h3>Waiting Time</h3>
-        <p>{wait} min</p>
+      {/* Waiting Time */}
+      <div className="cq-card cq-card-wait">
+        <div className="cq-card-top">
+          <div className="cq-icon-wrap">◷</div>
+          <span className="cq-card-tag">EST.</span>
+        </div>
+        <div className="cq-card-label">Waiting Time</div>
+        <div className="cq-card-value">
+          {wait}
+          <span className="cq-card-unit">min</span>
+        </div>
+        <div className="cq-card-foot">≈ &nbsp;5 MIN PER CONSULT</div>
       </div>
     </div>
   );

@@ -1,16 +1,37 @@
-import "../styles/navbar.css";
-import { Heart } from "lucide-react";
+import { useEffect, useState } from "react";
 
 const Navbar = () => {
+  const [time, setTime] = useState("");
+
+  useEffect(() => {
+    const tick = () => {
+      const n = new Date();
+      setTime(n.toLocaleTimeString("en-IN", {
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: false,
+      }));
+    };
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, []);
+
   return (
-    <nav className="nav">
-      <div className="nav-logo flex items-center gap-2">
-        <Heart className="w-6 h-6 text-primary" />
-        <span>ClinicQueue</span>
+    <header className="cq-header">
+      <div className="logo">
+        <div className="logo-mark">♥</div>
+        ClinicQueue
       </div>
-      <div className="nav-links">
+      <div className="header-right">
+        <div className="status-chip">
+          <div className="chip-dot" />
+          SYSTEM ONLINE
+        </div>
+        <div className="time-chip">{time || "--:--:--"}</div>
       </div>
-    </nav>
+    </header>
   );
 };
 
