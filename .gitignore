@@ -6,9 +6,40 @@ server/node_modules/
 # env files
 .env
 .env.*
+.env.local
 
 # builds
 dist/
 build/
-
 .vercel
+
+# IDEs and Editors
+.vscode/
+.idea/
+.zed/
+.cursor/
+.codex/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS Files
+.DS_Store
+Thumbs.db
+
+# Project specific unwanted files
+data_output.txt
+output.txt
+db_info.json
+opencode.json
+.gemini/
+.mcp.json
