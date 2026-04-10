@@ -1,34 +1,43 @@
 {
-    "version": 2,
-    "builds": [
-        {
-            "src": "server/server.js",
-            "use": "@vercel/node"
-        },
-        {
-            "src": "client/package.json",
-            "use": "@vercel/static-build",
-            "config": {
-                "distDir": "dist"
-            }
-        }
-    ],
-    "rewrites": [
-        {
-            "source": "/api/(.*)",
-            "destination": "/server/server.js"
-        },
-        {
-            "source": "/assets/(.*)",
-            "destination": "/client/assets/$1"
-        },
-        {
-            "source": "/vite.svg",
-            "destination": "/client/vite.svg"
-        },
-        {
-            "source": "/(.*)",
-            "destination": "/client/index.html"
-        }
-    ]
+  "version": 2,
+  "builds": [
+    {
+      "src": "server/server.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "client/package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "dist"
+      }
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "server/server.js"
+    },
+    {
+      "handle": "filesystem"
+    },
+    {
+      "src": "/assets/(.*)",
+      "dest": "client/assets/$1"
+    },
+    {
+      "src": "/index.html",
+      "dest": "client/index.html"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "client/$1",
+      "check": true
+    },
+    {
+      "src": "/(.*)",
+      "status": 404,
+      "dest": "client/index.html"
+    }
+  ]
 }
