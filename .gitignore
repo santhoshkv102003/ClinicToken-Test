@@ -43,3 +43,4 @@ db_info.json
 opencode.json
 .gemini/
 .mcp.json
+config/
