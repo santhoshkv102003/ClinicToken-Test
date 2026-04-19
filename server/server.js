@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 import cors from "cors";
 import dotenv from "dotenv";
 import Patient from "./models/patient.js";
+import Settings from "./models/settings.js";
 import connectDB from "./config/db.js";
 
 dotenv.config();
@@ -29,6 +30,15 @@ app.use(async (req, res, next) => {
     res.status(500).json({ message: "Database connection failed" });
   }
 });
+
+// Helper to get settings
+const getSettings = async () => {
+  let settings = await Settings.findOne({ singletonIdentifier: "GLOBAL_SETTINGS" });
+  if (!settings) {
+    settings = await Settings.create({ singletonIdentifier: "GLOBAL_SETTINGS" });
+  }
+  return settings;
+};
 
 // ROUTES
 
@@ -65,20 +75,51 @@ app.post("/api/patients", async (req, res) => {
   }
 });
 
-// Next patient: move first in queue → completed
+// Next patient: move current consulting to completed, move first in queue → consulting
 app.patch("/api/patients/next", async (req, res) => {
   try {
-    const next = await Patient.findOne({ status: "in-queue" })
-      .sort({ createdAt: 1 });
+    // 1. Finish the current 'consulting' patient (if any)
+    const currentConsulting = await Patient.findOne({ status: "consulting" });
+    if (currentConsulting) {
+      currentConsulting.status = "completed";
+      currentConsulting.consultationEndTime = new Date();
+      await currentConsulting.save();
 
-    if (!next) {
-      return res.status(400).json({ message: "No patients in queue" });
+      // Calculate duration and update average
+      const startTime = currentConsulting.consultationStartTime || currentConsulting.createdAt;
+      const duration = currentConsulting.consultationEndTime - startTime;
+      const settings = await getSettings();
+
+      settings.lastConsultationTimes.push(duration);
+      if (settings.lastConsultationTimes.length > 5) {
+        settings.lastConsultationTimes.shift();
+      }
+
+      const sum = settings.lastConsultationTimes.reduce((a, b) => a + b, 0);
+      settings.averageConsultationTimeMs = sum / settings.lastConsultationTimes.length;
+      await settings.save();
     }
 
-    next.status = "completed";
+    // 2. Start the next 'in-queue' patient
+    const next = await Patient.findOne({ status: "in-queue" }).sort({ createdAt: 1 });
+
+    if (!next) {
+      return res.status(200).json({ 
+        message: currentConsulting ? "Consultation finished, no more patients in queue" : "No patients in queue", 
+        finishedPatient: currentConsulting || null,
+        nextPatient: null 
+      });
+    }
+
+    next.status = "consulting";
+    next.consultationStartTime = new Date();
     await next.save();
 
-    res.json({ message: "Next patient completed", patient: next });
+    res.json({ 
+      message: "Moved to next patient", 
+      finishedPatient: currentConsulting || null,
+      nextPatient: next 
+    });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Server error" });
@@ -100,13 +141,30 @@ app.delete("/api/patients", async (req, res) => {
 app.get("/api/summary", async (req, res) => {
   try {
     const inQueueCount = await Patient.countDocuments({ status: "in-queue" });
+    const consultingCount = await Patient.countDocuments({ status: "consulting" });
     const completedCount = await Patient.countDocuments({ status: "completed" });
+    
+    const settings = await getSettings();
+    const avgMinutes = settings.averageConsultationTimeMs / 60000;
 
     res.json({
       inQueue: inQueueCount,
+      consulting: consultingCount,
       completed: completedCount,
-      waitMinutes: inQueueCount * 5,
+      averageConsultationTimeMinutes: avgMinutes,
+      waitMinutes: (inQueueCount + consultingCount) * avgMinutes,
     });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+// Settings endpoint
+app.get("/api/settings", async (req, res) => {
+  try {
+    const settings = await getSettings();
+    res.json(settings);
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Server error" });

@@ -7,6 +7,8 @@ const API_BASE = "/api";
 export const AppProvider = ({ children }) => {
   const [upcomingPatients, setUpcoming] = useState([]);
   const [visitedPatients, setVisited] = useState([]);
+  const [consultingPatient, setConsulting] = useState(null);
+  const [averageTime, setAverageTime] = useState(5); // in minutes
 
   const [adminLogged, setAdminLogged] = useState(false);
 
@@ -40,16 +42,25 @@ export const AppProvider = ({ children }) => {
   // Fetch patients from backend
   const loadPatients = async () => {
     try {
-      const [queueRes, completedRes] = await Promise.all([
+      const [queueRes, completedRes, consultingRes, settingsRes] = await Promise.all([
         fetch(`${API_BASE}/patients?status=in-queue`),
         fetch(`${API_BASE}/patients?status=completed`),
+        fetch(`${API_BASE}/patients?status=consulting`),
+        fetch(`${API_BASE}/settings`),
       ]);
 
       const queueData = await queueRes.json();
       const completedData = await completedRes.json();
+      const consultingData = await consultingRes.json();
+      const settingsData = await settingsRes.json();
 
       setUpcoming(queueData);
       setVisited(completedData);
+      setConsulting(consultingData.length > 0 ? consultingData[0] : null);
+      
+      if (settingsData && settingsData.averageConsultationTimeMs) {
+        setAverageTime(settingsData.averageConsultationTimeMs / 60000);
+      }
     } catch (err) {
       console.error("Error loading patients", err);
     }
@@ -85,10 +96,6 @@ export const AppProvider = ({ children }) => {
 
   // Next patient → PATCH /api/patients/next
   const nextPatient = async () => {
-    if (upcomingPatients.length === 0) return; // No patients to process
-
-    const nextPatient = upcomingPatients[0];
-
     try {
       // Make the API call first
       const response = await fetch(`${API_BASE}/patients/next`, {
@@ -96,18 +103,19 @@ export const AppProvider = ({ children }) => {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to update patient status');
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to update patient status');
       }
 
-      // Only update the UI after successful API call
-      setUpcoming(prev => prev.slice(1));
-      setVisited(prev => [nextPatient, ...prev]);
+      // Re-fetch everything to ensure UI is in sync with server logic
+      // (Server handles status transitions and average calculation)
+      await loadPatients();
 
     } catch (err) {
       console.error("Error moving next patient", err);
       // Re-fetch to ensure UI is in sync with server
       await loadPatients();
-      throw err; // Re-throw to allow handling in the component if needed
+      throw err; 
     }
   };
 
@@ -128,6 +136,8 @@ export const AppProvider = ({ children }) => {
       value={{
         upcomingPatients,
         visitedPatients,
+        consultingPatient,
+        averageTime,
         addPatient,
         nextPatient,
         resetAll,

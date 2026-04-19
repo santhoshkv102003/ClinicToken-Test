@@ -20,9 +20,11 @@ function addRipple(e) {
 }
 
 const Home = () => {
-  const { addPatient, adminLogged, visitedPatients, upcomingPatients } = useContext(AppContext);
+  const { addPatient, adminLogged, visitedPatients, upcomingPatients, consultingPatient, averageTime } = useContext(AppContext);
   const [showForm, setShowForm] = useState(false);
   const navigate = useNavigate();
+
+  const totalWait = Math.round((upcomingPatients.length + (consultingPatient ? 1 : 0)) * averageTime);
 
   const handleSubmit = async (data) => {
     try {
@@ -52,8 +54,9 @@ const Home = () => {
               {/* Stat cards */}
               <Cards
                 completed={visitedPatients.length}
-                queue={upcomingPatients.length}
-                wait={upcomingPatients.length * 5}
+                queue={upcomingPatients.length + (consultingPatient ? 1 : 0)}
+                wait={totalWait}
+                avgTime={averageTime}
               />
 
               {/* Action buttons */}

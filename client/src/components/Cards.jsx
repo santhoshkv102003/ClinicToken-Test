@@ -1,4 +1,4 @@
-const Cards = ({ completed, queue, wait }) => {
+const Cards = ({ completed, queue, wait, avgTime = 5 }) => {
   return (
     <div className="cq-cards">
       {/* Completed */}
@@ -34,7 +34,7 @@ const Cards = ({ completed, queue, wait }) => {
           {wait}
           <span className="cq-card-unit">min</span>
         </div>
-        <div className="cq-card-foot">≈ &nbsp;5 MIN PER CONSULT</div>
+        <div className="cq-card-foot">≈ &nbsp;{Math.round(avgTime)} MIN PER CONSULT</div>
       </div>
     </div>
   );

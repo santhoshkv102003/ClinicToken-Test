@@ -8,9 +8,14 @@ const patientSchema = new mongoose.Schema(
     treatment: { type: String, required: true },
     status: {
       type: String,
-      enum: ["in-queue", "completed"],
+      enum: ["in-queue", "consulting", "completed"],
       default: "in-queue",
     },
+    priority: { type: String, enum: ["normal", "emergency"], default: "normal" },
+    consultationStartTime: { type: Date },
+    consultationEndTime: { type: Date },
+    email: { type: String },
+    notificationSent: { type: Boolean, default: false },
   },
   { timestamps: true }
 );

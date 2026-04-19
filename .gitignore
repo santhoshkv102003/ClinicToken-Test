@@ -44,3 +44,5 @@ opencode.json
 .gemini/
 .mcp.json
 config/
+
+.vercel

@@ -23,6 +23,8 @@ const Admin = () => {
   const {
     upcomingPatients,
     visitedPatients,
+    consultingPatient,
+    averageTime,
     addPatient,
     nextPatient,
     resetAll,
@@ -32,6 +34,8 @@ const Admin = () => {
   const navigate = useNavigate();
   const [section, setSection] = useState("main");
   const [isLoading, setIsLoading] = useState(false);
+
+  const totalWait = Math.round((upcomingPatients.length + (consultingPatient ? 1 : 0)) * averageTime);
 
   const handleSubmit = async (data) => {
     setIsLoading(true);
@@ -115,9 +119,22 @@ const Admin = () => {
             <div className="admin-section-main">
               <Cards
                 completed={visitedPatients.length}
-                queue={upcomingPatients.length}
-                wait={upcomingPatients.length * 5}
+                queue={upcomingPatients.length + (consultingPatient ? 1 : 0)}
+                wait={totalWait}
+                avgTime={averageTime}
               />
+
+              {consultingPatient && (
+                <div className="admin-current-card cq-panel" style={{ marginBottom: '20px', border: '1px solid var(--accent)' }}>
+                  <div className="admin-list-hd">
+                    <h2 className="admin-list-title" style={{ color: 'var(--accent)' }}>Currently Consulting</h2>
+                    <span className="cq-badge" style={{ background: 'var(--accent)', color: 'white' }}>IN PROGRESS</span>
+                  </div>
+                  <div style={{ padding: '15px', color: 'var(--text)' }}>
+                    <strong>{consultingPatient.name}</strong> • {consultingPatient.treatment}
+                  </div>
+                </div>
+              )}
 
               <div className="admin-nav-grid">
                 <button
@@ -144,12 +161,12 @@ const Admin = () => {
                 <button
                   className="cq-btn cq-btn-primary admin-next-btn"
                   onClick={(e) => { addRipple(e); nextPatient(); }}
-                  disabled={upcomingPatients.length === 0}
+                  disabled={upcomingPatients.length === 0 && !consultingPatient}
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <polyline points="9 18 15 12 9 6" />
                   </svg>
-                  Call Next Patient
+                  {consultingPatient ? "Finish & Next" : "Call Next Patient"}
                 </button>
               </div>
             </div>
