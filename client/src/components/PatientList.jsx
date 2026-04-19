@@ -2,7 +2,7 @@ import { useContext } from "react";
 import { AppContext } from "../context/AppContext";
 import "../styles/patientlist.css";
 
-const PatientList = ({ list }) => {
+const PatientList = ({ list, showWaitTime = true }) => {
   const { calculateWaitTime } = useContext(AppContext);
 
   if (!list || list.length === 0) {
@@ -24,7 +24,8 @@ const PatientList = ({ list }) => {
             <th>Name</th>
             <th>Age</th>
             <th>Phone</th>
-            <th>Wait (Mins)</th>
+            <th>Department</th>
+            {showWaitTime && <th>Wait (Mins)</th>}
           </tr>
         </thead>
         <tbody>
@@ -37,16 +38,21 @@ const PatientList = ({ list }) => {
               <td>{p.age}</td>
               <td className="pl-phone">{p.phone}</td>
               <td>
-                <span className="pl-wait-badge" style={{ 
-                  color: 'var(--accent)', 
-                  fontWeight: 'bold',
-                  background: 'rgba(0, 243, 255, 0.1)',
-                  padding: '4px 8px',
-                  borderRadius: '4px'
-                }}>
-                  {calculateWaitTime(p.tokenNumber, list)} mins
-                </span>
+                <span className="pl-badge">{p.treatment}</span>
               </td>
+              {showWaitTime && (
+                <td>
+                  <span className="pl-wait-badge" style={{ 
+                    color: 'var(--accent)', 
+                    fontWeight: 'bold',
+                    background: 'rgba(0, 243, 255, 0.1)',
+                    padding: '4px 8px',
+                    borderRadius: '4px'
+                  }}>
+                    {calculateWaitTime(p.tokenNumber, list)} mins
+                  </span>
+                </td>
+              )}
             </tr>
           ))}
         </tbody>

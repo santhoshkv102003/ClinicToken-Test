@@ -45,6 +45,16 @@ const BookingForm = ({ onBack, onSubmit, isLoading: parentLoading }) => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  // Auto-close success screen after 1 second
+  useEffect(() => {
+    if (tokenIssued) {
+      const timer = setTimeout(() => {
+        onBack();
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [tokenIssued, onBack]);
+
   const handleSelectDepartment = (dept) => {
     setForm({ ...form, treatment: dept });
     setIsDropdownOpen(false);

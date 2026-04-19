@@ -126,47 +126,68 @@ const Admin = () => {
                   avgTime={averageTime}
                 />
 
-                <div className="cq-panel" style={{ marginBottom: '20px', padding: '20px' }}>
-                  <div className="admin-list-hd" style={{ marginBottom: '15px' }}>
-                    <h2 className="admin-list-title">Live Pace Adjustment</h2>
-                    <span className="cq-badge">DYNAMIC</span>
+                <div className="admin-grid-tier2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '20px' }}>
+                  <div className="cq-panel" style={{ padding: '20px' }}>
+                    <div className="admin-list-hd" style={{ marginBottom: '15px' }}>
+                      <h2 className="admin-list-title">Live Pace Adjustment</h2>
+                      <span className="cq-badge">DYNAMIC</span>
+                    </div>
+                    <div className="pace-controls" style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
+                      <div style={{ color: 'var(--text-dim)', fontSize: '0.9rem' }}>
+                        AVERAGE CONSULTATION TIME:
+                      </div>
+                      <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                        <button 
+                          className="cq-btn cq-btn-secondary" 
+                          style={{ padding: '4px 12px', minWidth: '40px' }}
+                          onClick={() => updateSettings({ averageConsultationTimeMs: Math.max(60000, (averageTime - 1) * 60000) })}
+                        >-</button>
+                        <span style={{ color: 'var(--accent)', fontWeight: 'bold', fontSize: '1.2rem', minWidth: '80px', textAlign: 'center' }}>
+                          {Math.round(averageTime)} min
+                        </span>
+                        <button 
+                          className="cq-btn cq-btn-secondary" 
+                          style={{ padding: '4px 12px', minWidth: '40px' }}
+                          onClick={() => updateSettings({ averageConsultationTimeMs: (averageTime + 1) * 60000 })}
+                        >+</button>
+                      </div>
+                    </div>
+                    <div style={{ color: 'var(--text-dim)', fontSize: '0.8rem', marginTop: '15px' }}>
+                    </div>
                   </div>
-                  <div className="pace-controls" style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
-                    <div style={{ color: 'var(--text-dim)', fontSize: '0.9rem' }}>
-                      Average Consultation Time:
-                    </div>
-                    <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-                      <button 
-                        className="cq-btn cq-btn-secondary" 
-                        style={{ padding: '4px 12px', minWidth: '40px' }}
-                        onClick={() => updateSettings({ averageConsultationTimeMs: Math.max(60000, (averageTime - 1) * 60000) })}
-                      >-</button>
-                      <span style={{ color: 'var(--accent)', fontWeight: 'bold', fontSize: '1.2rem', minWidth: '80px', textAlign: 'center' }}>
-                        {Math.round(averageTime)} min
-                      </span>
-                      <button 
-                        className="cq-btn cq-btn-secondary" 
-                        style={{ padding: '4px 12px', minWidth: '40px' }}
-                        onClick={() => updateSettings({ averageConsultationTimeMs: (averageTime + 1) * 60000 })}
-                      >+</button>
-                    </div>
-                    <div style={{ color: 'var(--text-dim)', fontSize: '0.8rem', marginLeft: '20px' }}>
-                      Updates all patients' live wait times instantly.
-                    </div>
-                  </div>
-                </div>
 
-                {consultingPatient && (
-                <div className="admin-current-card cq-panel" style={{ marginBottom: '20px', border: '1px solid var(--accent)' }}>
-                  <div className="admin-list-hd">
-                    <h2 className="admin-list-title" style={{ color: 'var(--accent)' }}>Currently Consulting</h2>
-                    <span className="cq-badge" style={{ background: 'var(--accent)', color: 'white' }}>IN PROGRESS</span>
-                  </div>
-                  <div style={{ padding: '15px', color: 'var(--text)' }}>
-                    <strong>{consultingPatient.name}</strong> • {consultingPatient.treatment}
-                  </div>
+                  {consultingPatient ? (
+                    <div className="admin-current-card cq-panel" style={{ border: '1px solid var(--accent)', display: 'flex', flexDirection: 'column' }}>
+                      <div className="admin-list-hd">
+                        <h2 className="admin-list-title" style={{ color: 'var(--accent)' }}>Currently Consulting</h2>
+                        <span className="cq-badge" style={{ background: 'var(--accent)', color: 'white' }}>IN PROGRESS</span>
+                      </div>
+                      <div className="consulting-info-box" style={{ 
+                        margin: '15px', 
+                        padding: '15px', 
+                        background: 'rgba(255,255,255,0.03)', 
+                        borderRadius: '8px', 
+                        flex: 1, 
+                        display: 'flex', 
+                        alignItems: 'center',
+                        fontFamily: 'monospace',
+                        fontSize: '1.1rem'
+                      }}>
+                        <span style={{ color: 'var(--text)' }}>
+                          <strong>{consultingPatient.name}</strong> - {consultingPatient.treatment}
+                        </span>
+                      </div>
+                      <div style={{ padding: '0 15px 15px', fontSize: '0.8rem', color: 'var(--accent)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span style={{ width: '8px', height: '8px', background: '#00ff00', borderRadius: '50%', display: 'inline-block', boxShadow: '0 0 10px #00ff00' }} />
+                        SESSION ACTIVE
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="cq-panel" style={{ opacity: 0.5, display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center' }}>
+                      <p style={{ color: 'var(--text-dim)' }}>Doctor is currently<br/>between patients</p>
+                    </div>
+                  )}
                 </div>
-              )}
 
               <div className="admin-nav-grid">
                 <button
@@ -258,7 +279,7 @@ const Admin = () => {
                   <h2 className="admin-list-title">Visited Patients</h2>
                   <span className="cq-badge">{visitedPatients.length} patients</span>
                 </div>
-                <PatientList list={visitedPatients} />
+                <PatientList list={visitedPatients} showWaitTime={false} />
               </div>
             </div>
           )}
