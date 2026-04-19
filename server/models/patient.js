@@ -16,6 +16,7 @@ const patientSchema = new mongoose.Schema(
     consultationEndTime: { type: Date },
     email: { type: String },
     notificationSent: { type: Boolean, default: false },
+    tokenNumber: { type: Number },
   },
   { timestamps: true }
 );

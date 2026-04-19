@@ -4,7 +4,15 @@ const settingsSchema = new mongoose.Schema(
   {
     averageConsultationTimeMs: {
       type: Number,
-      default: 300000, // Default to 5 minutes (in milliseconds)
+      default: 300000, // Default to 5 minutes
+    },
+    defaultAvgTimeMs: {
+      type: Number,
+      default: 300000,
+    },
+    smoothingFactor: {
+      type: Number,
+      default: 3,
     },
     lastConsultationTimes: {
       type: [Number],

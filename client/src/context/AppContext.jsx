@@ -88,6 +88,8 @@ export const AppProvider = ({ children }) => {
       // Update the state directly with the new patient
       setUpcoming(prev => [...prev, newPatient]);
 
+      return newPatient;
+
     } catch (err) {
       console.error("Error adding patient", err);
       throw err; // Re-throw the error to handle it in the component if needed
@@ -131,6 +133,54 @@ export const AppProvider = ({ children }) => {
     }
   };
 
+  const updateSettings = async (newData) => {
+    try {
+      await fetch(`${API_BASE}/settings`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newData),
+      });
+      await loadPatients();
+    } catch (err) {
+      console.error("Error updating settings", err);
+    }
+  };
+
+  const calculateWaitTime = (patientToken, list) => {
+    // Reference token is the one currently being served OR the last one finished
+    const lastVisitedToken = visitedPatients.length > 0 ? visitedPatients[visitedPatients.length - 1].tokenNumber : 0;
+    const currentTokenNumber = consultingPatient ? consultingPatient.tokenNumber : lastVisitedToken;
+    
+    const patientsAhead = patientToken - currentTokenNumber - 1;
+    
+    if (patientsAhead < 0) return 0;
+
+    let waitTime = patientsAhead * averageTime;
+    
+    if (consultingPatient && consultingPatient.consultationStartTime) {
+      const elapsed = (new Date() - new Date(consultingPatient.consultationStartTime)) / 60000;
+      const remaining = Math.max(0, averageTime - elapsed);
+      waitTime += remaining;
+    } else {
+      // If doctor is available (no one consulting) and no one is ahead of this patient
+      if (patientsAhead === 0) return 0;
+      
+      // If doctor hasn't started at all (no visited, no consulting)
+      if (lastVisitedToken === 0 && !consultingPatient) {
+         return (patientToken - 1) * averageTime;
+      }
+    }
+    
+    return Math.round(waitTime);
+  };
+
+  const getTotalWaitTime = () => {
+    // Total wait is the wait time for the "next" slot in line
+    const lastToken = (consultingPatient ? consultingPatient.tokenNumber : (visitedPatients.length > 0 ? visitedPatients[visitedPatients.length-1].tokenNumber : 0)) + upcomingPatients.length;
+    const nextSlotToken = lastToken + 1;
+    return calculateWaitTime(nextSlotToken);
+  };
+
   return (
     <AppContext.Provider
       value={{
@@ -141,10 +191,13 @@ export const AppProvider = ({ children }) => {
         addPatient,
         nextPatient,
         resetAll,
+        updateSettings,
 
         adminLogged,
         loginAdmin,
         logoutAdmin,
+        calculateWaitTime,
+        getTotalWaitTime
       }}
     >
       {children}

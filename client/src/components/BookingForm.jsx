@@ -56,24 +56,21 @@ const BookingForm = ({ onBack, onSubmit, isLoading: parentLoading }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setSubmitting(true);
-    try {
-      const res = await axios.post(
-        "/api/patients",
-        { name: form.name, age: Number(form.age), phone: form.phone, treatment: form.treatment },
-        { headers: { "Content-Type": "application/json" } }
-      );
-
-      // Build a token number from the response or just use a local counter
-      const tokenNum = res?.data?.token || `T${String(Date.now()).slice(-4)}`;
-      setTokenIssued(tokenNum);
-
-      if (onSubmit) onSubmit(form);
-    } catch (err) {
-      console.error("❌ Error saving patient:", err);
-      alert("Failed to save patient. Check your server.");
-    } finally {
-      setSubmitting(false);
+    if (onSubmit) {
+      try {
+        setSubmitting(true);
+        const newPatient = await onSubmit(form);
+        if (newPatient && newPatient.tokenNumber) {
+          setTokenIssued(`T${String(newPatient.tokenNumber).padStart(2, "0")}`);
+        } else {
+          // Fallback if tokenNumber isn't available for some reason
+          setTokenIssued(`T${String(Date.now()).slice(-2)}`);
+        }
+      } catch (err) {
+        console.error("❌ Error saving patient:", err);
+      } finally {
+        setSubmitting(false);
+      }
     }
   };
 

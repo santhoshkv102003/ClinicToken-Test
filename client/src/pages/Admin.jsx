@@ -29,19 +29,21 @@ const Admin = () => {
     nextPatient,
     resetAll,
     logoutAdmin,
+    updateSettings,
+    calculateWaitTime,
+    getTotalWaitTime,
   } = useContext(AppContext);
 
   const navigate = useNavigate();
   const [section, setSection] = useState("main");
   const [isLoading, setIsLoading] = useState(false);
 
-  const totalWait = Math.round((upcomingPatients.length + (consultingPatient ? 1 : 0)) * averageTime);
+  const totalWait = getTotalWaitTime();
 
   const handleSubmit = async (data) => {
     setIsLoading(true);
     try {
       await addPatient(data);
-      setSection("main");
     } catch (error) {
       console.error("Error adding patient:", error);
     } finally {
@@ -116,15 +118,45 @@ const Admin = () => {
 
           {/* ── MAIN SECTION ── */}
           {section === "main" && (
-            <div className="admin-section-main">
-              <Cards
-                completed={visitedPatients.length}
-                queue={upcomingPatients.length + (consultingPatient ? 1 : 0)}
-                wait={totalWait}
-                avgTime={averageTime}
-              />
+              <div className="admin-section-main">
+                <Cards
+                  completed={visitedPatients.length}
+                  queue={upcomingPatients.length + (consultingPatient ? 1 : 0)}
+                  wait={totalWait}
+                  avgTime={averageTime}
+                />
 
-              {consultingPatient && (
+                <div className="cq-panel" style={{ marginBottom: '20px', padding: '20px' }}>
+                  <div className="admin-list-hd" style={{ marginBottom: '15px' }}>
+                    <h2 className="admin-list-title">Live Pace Adjustment</h2>
+                    <span className="cq-badge">DYNAMIC</span>
+                  </div>
+                  <div className="pace-controls" style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
+                    <div style={{ color: 'var(--text-dim)', fontSize: '0.9rem' }}>
+                      Average Consultation Time:
+                    </div>
+                    <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                      <button 
+                        className="cq-btn cq-btn-secondary" 
+                        style={{ padding: '4px 12px', minWidth: '40px' }}
+                        onClick={() => updateSettings({ averageConsultationTimeMs: Math.max(60000, (averageTime - 1) * 60000) })}
+                      >-</button>
+                      <span style={{ color: 'var(--accent)', fontWeight: 'bold', fontSize: '1.2rem', minWidth: '80px', textAlign: 'center' }}>
+                        {Math.round(averageTime)} min
+                      </span>
+                      <button 
+                        className="cq-btn cq-btn-secondary" 
+                        style={{ padding: '4px 12px', minWidth: '40px' }}
+                        onClick={() => updateSettings({ averageConsultationTimeMs: (averageTime + 1) * 60000 })}
+                      >+</button>
+                    </div>
+                    <div style={{ color: 'var(--text-dim)', fontSize: '0.8rem', marginLeft: '20px' }}>
+                      Updates all patients' live wait times instantly.
+                    </div>
+                  </div>
+                </div>
+
+                {consultingPatient && (
                 <div className="admin-current-card cq-panel" style={{ marginBottom: '20px', border: '1px solid var(--accent)' }}>
                   <div className="admin-list-hd">
                     <h2 className="admin-list-title" style={{ color: 'var(--accent)' }}>Currently Consulting</h2>

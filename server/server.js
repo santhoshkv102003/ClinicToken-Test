@@ -31,6 +31,8 @@ app.use(async (req, res, next) => {
   }
 });
 
+import notificationService from "./services/notificationService.js";
+
 // Helper to get settings
 const getSettings = async () => {
   let settings = await Settings.findOne({ singletonIdentifier: "GLOBAL_SETTINGS" });
@@ -59,6 +61,11 @@ app.get("/api/patients", async (req, res) => {
 app.post("/api/patients", async (req, res) => {
   try {
     const { name, age, phone, treatment } = req.body;
+    const settings = await getSettings();
+
+    // Calculate Token Number (simple increment for today)
+    const count = await Patient.countDocuments({});
+    const tokenNumber = count + 1;
 
     const patient = await Patient.create({
       name,
@@ -66,7 +73,32 @@ app.post("/api/patients", async (req, res) => {
       phone,
       treatment,
       status: "in-queue",
+      tokenNumber
     });
+
+    // Calculate wait time for notification (Initial logic when booking)
+    // patientsAhead = tokenNumber - currentToken - 1
+    // If no one is consulting, currentToken effectively 0
+    const consulting = await Patient.findOne({ status: "consulting" });
+    const currentToken = consulting ? consulting.tokenNumber : 0;
+    const patientsAhead = tokenNumber - currentToken - 1;
+    
+    let waitTime = patientsAhead * (settings.averageConsultationTimeMs / 60000);
+    
+    // Add remaining time if someone is consulting
+    if (consulting) {
+      const elapsed = (new Date() - consulting.consultationStartTime) / 60000;
+      const remaining = Math.max(0, (settings.averageConsultationTimeMs / 60000) - elapsed);
+      waitTime += remaining;
+    } else {
+      // If doctor not started, use default logic: (token_number - 1) * default_avg
+      if (currentToken === 0) {
+        waitTime = (tokenNumber - 1) * (settings.defaultAvgTimeMs / 60000);
+      }
+    }
+
+    // Send Notification
+    await notificationService.sendNotification(patient, tokenNumber, waitTime);
 
     res.status(201).json(patient);
   } catch (err) {
@@ -78,25 +110,26 @@ app.post("/api/patients", async (req, res) => {
 // Next patient: move current consulting to completed, move first in queue → consulting
 app.patch("/api/patients/next", async (req, res) => {
   try {
-    // 1. Finish the current 'consulting' patient (if any)
+    const settings = await getSettings();
+    
+    // 1. Finish the current 'consulting' patient
     const currentConsulting = await Patient.findOne({ status: "consulting" });
     if (currentConsulting) {
       currentConsulting.status = "completed";
       currentConsulting.consultationEndTime = new Date();
       await currentConsulting.save();
 
-      // Calculate duration and update average
+      // Calculate duration and update average using SMOOTHING formula
+      // avg_time = (old_avg * w + last_consultation_time) / (w + 1)
       const startTime = currentConsulting.consultationStartTime || currentConsulting.createdAt;
       const duration = currentConsulting.consultationEndTime - startTime;
-      const settings = await getSettings();
-
+      
+      const w = settings.smoothingFactor || 3;
+      settings.averageConsultationTimeMs = (settings.averageConsultationTimeMs * w + duration) / (w + 1);
+      
       settings.lastConsultationTimes.push(duration);
-      if (settings.lastConsultationTimes.length > 5) {
-        settings.lastConsultationTimes.shift();
-      }
-
-      const sum = settings.lastConsultationTimes.reduce((a, b) => a + b, 0);
-      settings.averageConsultationTimeMs = sum / settings.lastConsultationTimes.length;
+      if (settings.lastConsultationTimes.length > 10) settings.lastConsultationTimes.shift();
+      
       await settings.save();
     }
 
@@ -120,6 +153,23 @@ app.patch("/api/patients/next", async (req, res) => {
       finishedPatient: currentConsulting || null,
       nextPatient: next 
     });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+// PATCH /api/settings - Adjust pace manually
+app.patch("/api/settings", async (req, res) => {
+  try {
+    const { averageConsultationTimeMs, smoothingFactor } = req.body;
+    const settings = await getSettings();
+    
+    if (averageConsultationTimeMs !== undefined) settings.averageConsultationTimeMs = averageConsultationTimeMs;
+    if (smoothingFactor !== undefined) settings.smoothingFactor = smoothingFactor;
+    
+    await settings.save();
+    res.json(settings);
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Server error" });

@@ -20,16 +20,15 @@ function addRipple(e) {
 }
 
 const Home = () => {
-  const { addPatient, adminLogged, visitedPatients, upcomingPatients, consultingPatient, averageTime } = useContext(AppContext);
+  const { addPatient, adminLogged, visitedPatients, upcomingPatients, consultingPatient, averageTime, getTotalWaitTime } = useContext(AppContext);
   const [showForm, setShowForm] = useState(false);
   const navigate = useNavigate();
 
-  const totalWait = Math.round((upcomingPatients.length + (consultingPatient ? 1 : 0)) * averageTime);
+  const totalWait = getTotalWaitTime();
 
   const handleSubmit = async (data) => {
     try {
       await addPatient(data);
-      setShowForm(false);
     } catch (error) {
       console.error("Error adding patient:", error);
     }
