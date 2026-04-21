@@ -1,4 +1,4 @@
-import { useState, useContext } from "react";
+import { useState, useContext, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { AppContext } from "../context/AppContext";
 import Navbar from "../components/Navbar";
@@ -35,10 +35,35 @@ const Admin = () => {
   } = useContext(AppContext);
 
   const navigate = useNavigate();
+  const [localAvgTime, setLocalAvgTime] = useState(Math.round(averageTime));
   const [section, setSection] = useState("main");
   const [isLoading, setIsLoading] = useState(false);
 
   const totalWait = getTotalWaitTime();
+
+  const handleAvgTimeChange = (e) => {
+    setLocalAvgTime(e.target.value);
+  };
+
+  const handleAvgTimeBlur = () => {
+    const val = parseInt(localAvgTime);
+    if (!isNaN(val) && val > 0) {
+      updateSettings({ averageConsultationTimeMs: val * 60000 });
+    } else {
+      setLocalAvgTime(Math.round(averageTime));
+    }
+  };
+
+  const handleAvgTimeKeyDown = (e) => {
+    if (e.key === "Enter") {
+      e.target.blur();
+    }
+  };
+
+  // Sync with global state when it changes from other sources or initial load
+  useEffect(() => {
+    setLocalAvgTime(Math.round(averageTime));
+  }, [averageTime]);
 
   const handleSubmit = async (data) => {
     setIsLoading(true);
@@ -136,25 +161,32 @@ const Admin = () => {
                       <div style={{ color: 'var(--text-dim)', fontSize: '0.9rem' }}>
                         AVERAGE CONSULTATION TIME:
                       </div>
-                      <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-                        <button 
-                          className="cq-btn cq-btn-secondary" 
-                          style={{ padding: '4px 12px', minWidth: '40px' }}
-                          onClick={() => updateSettings({ averageConsultationTimeMs: Math.max(60000, (averageTime - 1) * 60000) })}
-                        >-</button>
-                        <span style={{ color: 'var(--accent)', fontWeight: 'bold', fontSize: '1.2rem', minWidth: '80px', textAlign: 'center' }}>
-                          {Math.round(averageTime)} min
-                        </span>
-                        <button 
-                          className="cq-btn cq-btn-secondary" 
-                          style={{ padding: '4px 12px', minWidth: '40px' }}
-                          onClick={() => updateSettings({ averageConsultationTimeMs: (averageTime + 1) * 60000 })}
-                        >+</button>
+                      <div style={{ display: 'flex', gap: '10px', alignItems: 'center', background: 'rgba(255,255,255,0.05)', borderRadius: '8px', padding: '4px 10px', border: '1px solid rgba(255,255,255,0.1)' }}>
+                        <input
+                          type="number"
+                          value={localAvgTime}
+                          onChange={handleAvgTimeChange}
+                          onBlur={handleAvgTimeBlur}
+                          onKeyDown={handleAvgTimeKeyDown}
+                          style={{
+                            background: 'transparent',
+                            border: 'none',
+                            color: 'var(--accent)',
+                            fontWeight: 'bold',
+                            fontSize: '1.2rem',
+                            width: '50px',
+                            textAlign: 'center',
+                            outline: 'none',
+                            fontFamily: 'monospace'
+                          }}
+                        />
+                        <span style={{ color: 'var(--text-dim)', fontSize: '0.9rem' }}>min</span>
                       </div>
                     </div>
                     <div style={{ color: 'var(--text-dim)', fontSize: '0.8rem', marginTop: '15px' }}>
                     </div>
                   </div>
+
 
                   {consultingPatient ? (
                     <div className="admin-current-card cq-panel" style={{ border: '1px solid var(--accent)', display: 'flex', flexDirection: 'column' }}>
